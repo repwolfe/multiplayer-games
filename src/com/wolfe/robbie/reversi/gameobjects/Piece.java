@@ -10,11 +10,13 @@ public class Piece implements GameObject {
 	private static int EMPTY 		= -1;
 	public static int DUMBPLAYER 	= 0;
 	public static int SMARTPLAYER 	= 1;
+	public static int POTENTIAL		= 2;
+	
 	private static int PieceLocationSize = 100;
 	private static int PieceSize = (int) (PieceLocationSize * 0.9);
 	private static int[] colors;
 	
-	private int squareX, squareY, locationX, locationY;
+	private int gridX, gridY, squareX, squareY, locationX, locationY;
 	private int color;
 	private int playerType;
 	private boolean converting = false;
@@ -23,7 +25,7 @@ public class Piece implements GameObject {
 	public static void init(int pieceLocationSize) {
 		PieceLocationSize = pieceLocationSize;
 		PieceSize = (int) (PieceLocationSize * 0.7);
-		colors = new int[2];
+		colors = new int[3];
 		if (Globals.random.nextBoolean()) {
 			colors[DUMBPLAYER] = 255;
 			colors[SMARTPLAYER] = 0;
@@ -34,6 +36,10 @@ public class Piece implements GameObject {
 		}
 	}
 	
+	public static int getEnemyType(int type) {
+		return (type == Piece.DUMBPLAYER ? Piece.SMARTPLAYER : Piece.DUMBPLAYER);
+	}
+	
 	public Piece(int x, int y) {
 		init(x, y);
 		playerType = EMPTY;
@@ -41,15 +47,42 @@ public class Piece implements GameObject {
 	
 	public Piece(int x, int y, int type) {
 		init(x, y);
-		playerType = type;
-		color = colors[playerType];
+		setType(type);
 	}
 	
 	private void init(int x, int y) {
-		squareX = x * PieceLocationSize;
-		squareY = y * PieceLocationSize;
-		locationX = squareX + (PieceLocationSize / 2);
-		locationY = squareY + (PieceLocationSize / 2);
+		gridX 		= x;
+		gridY 		= y;
+		squareX 	= gridX * PieceLocationSize;
+		squareY 	= gridY * PieceLocationSize;
+		locationX 	= squareX + (PieceLocationSize / 2);
+		locationY 	= squareY + (PieceLocationSize / 2);
+	}
+	
+	public final int getX() {
+		return gridX;
+	}
+	
+	public final int getY() {
+		return gridY;
+	}
+	
+	public int getType() {
+		return playerType;
+	}
+	
+	public void makePotential(int type) {
+		playerType = POTENTIAL;
+		color = colors[type];
+	}
+	
+	public void setType(int type) {
+		playerType = type;
+		color = colors[type];
+	}
+	
+	public void makeEmpty() {
+		playerType = EMPTY;
 	}
 
 	@Override
@@ -71,6 +104,7 @@ public class Piece implements GameObject {
 	
 	public void convertPiece() {
 		converting = true;
+		playerType = getEnemyType(playerType);
 		offset = (color == 255 ? -1 : 1);
 	}
 
@@ -85,7 +119,12 @@ public class Piece implements GameObject {
 			return;
 		}
 		g.ellipseMode(PConstants.CENTER);
-		g.fill(g.color(color));
+		if (playerType == POTENTIAL) {
+			g.fill(g.color(color, 80));
+		}
+		else {
+			g.fill(g.color(color));
+		}
 		g.ellipse(locationX, locationY, PieceSize, PieceSize);
 	}
 

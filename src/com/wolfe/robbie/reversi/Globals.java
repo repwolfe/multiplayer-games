@@ -11,7 +11,7 @@ public class Globals {
 	public static final boolean DEBUG = true;
 	
 	// If true, you are playing against computer. Otherwise you are computer and player plays randomly
-	public static final boolean PLAY_AS_DUMB_PLAYER = false;
+	public static final boolean PLAY_AS_DUMB_PLAYER = true;
 	
 	public static final int PLY_AMOUNT = 4;
 	public static final boolean USE_ALPHA_BETA_PRUNING = true;
