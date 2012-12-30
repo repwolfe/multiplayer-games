@@ -3,8 +3,6 @@ package com.wolfe.robbie.reversi.gameobjects;
 import processing.core.PApplet;
 
 import com.wolfe.robbie.common.GameObject;
-import com.wolfe.robbie.common.Point;
-import com.wolfe.robbie.common.eBoardObject;
 import com.wolfe.robbie.common.ai.Action;
 import com.wolfe.robbie.common.ai.MiniMax;
 import com.wolfe.robbie.reversi.Globals;
@@ -13,36 +11,44 @@ import com.wolfe.robbie.reversi.ai.ReversiProductionManager;
 import com.wolfe.robbie.reversi.ai.ReversiState;
 
 public class Board implements GameObject {
+	private Piece[][] boardPieces;
 	
-	private eBoardObject currentPlayer;
+	private int currentPlayer;
 	private boolean gameOver;
-
-	private Point selectedPiece;
 	
 	private ReversiProductionManager moveManager;
 	private MiniMax artificialIntelligence;
 	
-	public Board() {
-		initializeBoard();
+	public Board(PApplet g) {
+		initializeBoard(g);
 	}
 	
-	private void initializeBoard() {
-		currentPlayer = eBoardObject.DUMBPLAYER;		
-		gameOver = false;		
-		selectedPiece = null;
+	private void initializeBoard(PApplet g) {
+		Piece.init(g, Globals.BOARD_SIZE / Globals.BOARD_DIMENSIONS);
+		boardPieces = new Piece[Globals.BOARD_DIMENSIONS][Globals.BOARD_DIMENSIONS];
+		currentPlayer = Piece.DUMBPLAYER;		
+		gameOver = false;
 		
 		moveManager = new ReversiProductionManager();
 		artificialIntelligence = new MiniMax(moveManager, new ReversiHeuristic(), Globals.USE_ALPHA_BETA_PRUNING, Globals.PLY_AMOUNT);
-	}
-	
-	private void switchPlayer() {
-		if (currentPlayer.equals(eBoardObject.DUMBPLAYER)) {
-			currentPlayer = eBoardObject.SMARTPLAYER;
-			//currentPieces = smartPieces;
-		}
-		else if (currentPlayer.equals(eBoardObject.SMARTPLAYER)) {
-			currentPlayer = eBoardObject.DUMBPLAYER;
-			//currentPieces = dumbPieces;
+		
+		// Used for initial pieces on the board, the center 4 pieces
+		int halfOne = Globals.BOARD_DIMENSIONS / 2;
+		int halfTwo = halfOne - 1;
+		
+		// Initialize board
+		for (int i = 0; i < Globals.BOARD_DIMENSIONS; ++i) {
+			for (int j = 0; j < Globals.BOARD_DIMENSIONS; ++j) {
+				if (i == halfTwo && j == halfTwo || i == halfOne && j == halfOne) {
+					boardPieces[i][j] = new Piece(i, j, Piece.DUMBPLAYER);
+				}
+				else if (i == halfTwo && j == halfOne || i == halfOne && j == halfTwo) {
+					boardPieces[i][j] = new Piece(i, j, Piece.SMARTPLAYER);
+				}
+				else {
+					boardPieces[i][j] = new Piece(i,j);
+				}
+			}
 		}
 	}
 	
@@ -50,10 +56,10 @@ public class Board implements GameObject {
 	public void update() {
 		if (!gameOver && !checkIsGameOver()) {
 			// Dumb players turn and you don't make its moves for it
-			if (currentPlayer.equals(eBoardObject.DUMBPLAYER) && !Globals.PLAY_AS_DUMB_PLAYER) {
+			if (currentPlayer == Piece.DUMBPLAYER && !Globals.PLAY_AS_DUMB_PLAYER) {
 				dumbPlayersMove();
 			}
-			else if (currentPlayer.equals(eBoardObject.SMARTPLAYER)) {
+			else if (currentPlayer == Piece.SMARTPLAYER) {
 				smartPlayersMove();
 			}
 		}
@@ -79,9 +85,9 @@ public class Board implements GameObject {
 			//executeAIMove(nextMove);
 		}
 		else {
-			randomMove();
+			randomlyPlacePiece(currentPlayer);
 		}
-		switchPlayer();
+		currentPlayer = Piece.SMARTPLAYER;
 	}
 	
 	private void smartPlayersMove() {
@@ -90,15 +96,15 @@ public class Board implements GameObject {
 			//executeAIMove(nextMove);
 		}
 		else {
-			randomMove();
+			randomlyPlacePiece(currentPlayer);
 		}
-		switchPlayer();
+		currentPlayer = Piece.DUMBPLAYER;
 	}
 	
-	private void randomMove() {
+	private void randomlyPlacePiece(int currentPlayer) {
 		
 	}
-
+	
 	@Override
 	public void draw(PApplet g) {
 		if (gameOver) {
@@ -108,53 +114,24 @@ public class Board implements GameObject {
 			g.fill(255);
 			g.text("Game Over", g.width/2-35, g.height/2);
 		}
-		final int squareWidth = Globals.BOARD_SIZE / Globals.BOARD_DIMENSIONS;
-		final int squareHeight = Globals.BOARD_SIZE / Globals.BOARD_DIMENSIONS;
 				
 		for (int i = 0; i < Globals.BOARD_DIMENSIONS; ++i) {
 			for (int j = 0; j < Globals.BOARD_DIMENSIONS; ++j) {
-				/*
-				// Highlight last move
-				if (lastMove != null && i == lastMove.x && j == lastMove.y) {
-					g.stroke(255, 255, 0);
-					g.strokeWeight(5);
-				}
-				else {*/
-					g.stroke(0);
-					g.strokeWeight(1);
-				//}
-				/*
-				eBoardObject obj = boardData[i][j];
-				
-				if (obj.equals(eBoardObject.EMPTY)) {
-					g.fill(g.color(255));
-				}
-				else if (obj.equals(eBoardObject.SMARTPLAYER)) {
-					g.fill(g.color(255,0,0));
-				}
-				else if (obj.equals(eBoardObject.DUMBPLAYER)) {
-					g.fill(g.color(0,0,255));
-				}
-				*/
-				
-				final int xLocation = i*squareWidth;
-				final int yLocation = j*squareHeight;
-				g.fill(g.color(0,200,0));
-				g.rect(xLocation, yLocation, squareWidth, squareHeight);
+				boardPieces[i][j].draw(g);
 			}
 		}
 		g.stroke(0);
 	}
 
 	public void clickedMove(int mouseX, int mouseY) {
-		if (!currentPlayer.equals(eBoardObject.DUMBPLAYER)) {
+		if (currentPlayer != Piece.DUMBPLAYER) {
 			return;
 		}
-		final int squareWidth = Globals.BOARD_SIZE / Globals.BOARD_DIMENSIONS;
-		final int squareHeight = Globals.BOARD_SIZE / Globals.BOARD_DIMENSIONS;
+		//final int squareWidth = Globals.BOARD_SIZE / Globals.BOARD_DIMENSIONS;
+		//final int squareHeight = Globals.BOARD_SIZE / Globals.BOARD_DIMENSIONS;
 		
-		int whichX = mouseX / squareWidth;
-		int whichY =  mouseY / squareHeight;
+		//int whichX = mouseX / squareWidth;
+		//int whichY =  mouseY / squareHeight;
 	}
 	
 	private ReversiState getCurrentState() {

@@ -13,8 +13,6 @@ public class Drawer extends PApplet {
 	private ArrayList<GameObject> gameObjects;
 	private Board board;
 	
-	boolean gameOver = false;
-	
 	@Override
 	public void setup() {
 		size(Globals.BOARD_SIZE, Globals.BOARD_SIZE);
@@ -24,9 +22,17 @@ public class Drawer extends PApplet {
 	
 	private void startGame() {
 		gameObjects = new ArrayList<GameObject>();
-		board = new Board();
+		board = new Board(this);
 		
 		gameObjects.add(board);
+	}
+	
+	@Override
+	public void draw() {
+		// Draw components
+		for (GameObject g: gameObjects) {
+			g.draw(this);
+		}
 	}
 	
 	@Override
@@ -37,18 +43,6 @@ public class Drawer extends PApplet {
 		// Playing as computer,
 		else if (Globals.PLAY_AS_DUMB_PLAYER) {
 			board.clickedMove(mouseX, mouseY);
-		}
-	}
-	
-	@Override
-	public void draw() {
-		g.background(255);
-		// Find solution before
-		if (gameOver == false) {
-			// Draw components
-			for (GameObject g: gameObjects) {
-				g.draw(this);
-			}
 		}
 	}
 	
