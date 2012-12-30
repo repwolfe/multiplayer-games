@@ -19,12 +19,12 @@ public class Board implements GameObject {
 	private ReversiProductionManager moveManager;
 	private MiniMax artificialIntelligence;
 	
-	public Board(PApplet g) {
-		initializeBoard(g);
+	public Board() {
+		initializeBoard();
 	}
 	
-	private void initializeBoard(PApplet g) {
-		Piece.init(g, Globals.BOARD_SIZE / Globals.BOARD_DIMENSIONS);
+	private void initializeBoard() {
+		Piece.init(Globals.BOARD_SIZE / Globals.BOARD_DIMENSIONS);
 		boardPieces = new Piece[Globals.BOARD_DIMENSIONS][Globals.BOARD_DIMENSIONS];
 		currentPlayer = Piece.DUMBPLAYER;		
 		gameOver = false;
@@ -41,6 +41,7 @@ public class Board implements GameObject {
 			for (int j = 0; j < Globals.BOARD_DIMENSIONS; ++j) {
 				if (i == halfTwo && j == halfTwo || i == halfOne && j == halfOne) {
 					boardPieces[i][j] = new Piece(i, j, Piece.DUMBPLAYER);
+					boardPieces[i][j].convertPiece();
 				}
 				else if (i == halfTwo && j == halfOne || i == halfOne && j == halfTwo) {
 					boardPieces[i][j] = new Piece(i, j, Piece.SMARTPLAYER);
@@ -114,13 +115,20 @@ public class Board implements GameObject {
 			g.fill(255);
 			g.text("Game Over", g.width/2-35, g.height/2);
 		}
-				
+		
+		// Draw
 		for (int i = 0; i < Globals.BOARD_DIMENSIONS; ++i) {
 			for (int j = 0; j < Globals.BOARD_DIMENSIONS; ++j) {
 				boardPieces[i][j].draw(g);
 			}
 		}
-		g.stroke(0);
+		
+		// Update
+		for (int i = 0; i < Globals.BOARD_DIMENSIONS; ++i) {
+			for (int j = 0; j < Globals.BOARD_DIMENSIONS; ++j) {
+				boardPieces[i][j].update();
+			}
+		}
 	}
 
 	public void clickedMove(int mouseX, int mouseY) {

@@ -22,7 +22,7 @@ public class Drawer extends PApplet {
 	
 	private void startGame() {
 		gameObjects = new ArrayList<GameObject>();
-		board = new Board(this);
+		board = new Board();
 		
 		gameObjects.add(board);
 	}
