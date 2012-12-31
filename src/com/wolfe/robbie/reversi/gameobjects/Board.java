@@ -1,8 +1,7 @@
 package com.wolfe.robbie.reversi.gameobjects;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -26,7 +25,7 @@ public class Board implements GameObject {
 	private ReversiProductionManager moveManager;
 	private MiniMax artificialIntelligence;
 	
-	private HashMap<Point, Piece> potentialMoves;
+	private Map<Point, Piece> potentialMoves;
 	
 	public Board() {
 		initializeBoard();
@@ -61,7 +60,7 @@ public class Board implements GameObject {
 		}
 		
 		potentialMoves = new HashMap<Point, Piece>();
-		makePotentialMoves();
+		moveManager.makePotentialMoves(potentialMoves, boardPieces, currentPlayer);
 	}
 	
 	@SuppressWarnings("unused")
@@ -83,77 +82,12 @@ public class Board implements GameObject {
 	 * @return
 	 */
 	private boolean checkIsGameOver() {
-		gameOver = potentialMoves.isEmpty();
+		gameOver = moveManager.isGameOver(potentialMoves);
 		return gameOver;
 	}
 	
 	public boolean isGameOver() {
 		return gameOver;
-	}
-	
-	private void makePotentialMoves() {
-		for (Entry<Point, Piece> pair : potentialMoves.entrySet()) {
-			pair.getValue().makeEmpty();
-		}
-		potentialMoves.clear();
-		
-		for (int i = 0; i < Globals.BOARD_DIMENSIONS; ++i) {
-			for (int j = 0; j < Globals.BOARD_DIMENSIONS; ++j) {
-				if (boardPieces[i][j].getType() == currentPlayer) {
-					List<Piece> sandwiches = findSandwichPieces(i, j, currentPlayer);
-					for (Piece piece : sandwiches) {
-						if (piece.getType() != currentPlayer) {
-							piece.makePotential(currentPlayer);
-							potentialMoves.put(new Point(piece.getX(), piece.getY()), piece);
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Go in all 8 directions, if adjacent to this piece is the other type of piece,
-	 * keep going in that direction until reach the end. Returns all the pieces at the end,
-	 * which form the other end of the sandwich
-	 * @param x
-	 * @param y
-	 * @param playerType
-	 * @Param enemyType
-	 */
-	private List<Piece> findSandwichPieces(int x, int y, int playerType) {
-		List<Piece> sandwiches = new LinkedList<Piece>();
-		int enemyType = Piece.getEnemyType(currentPlayer);
-		for (int i = -1; i < 2; ++i) {
-			for (int j = -1; j < 2; ++j) {
-				if (i == 0 && j == 0) {
-					// Ignore self
-					continue;
-				}
-				int multiplier = 1;
-				int currentType = enemyType;
-				Piece move = null;
-					
-				// Keep going in this direction until hit empty piece or end of board
-				while (currentType == enemyType) {
-					int newX = x + (i * multiplier);
-					int newY = y + (j * multiplier);
-					if (newX < 0 || newY < 0 || newX >= Globals.BOARD_DIMENSIONS || newY >= Globals.BOARD_DIMENSIONS) {
-						move = null;
-						break;
-					}
-					move = boardPieces[newX][newY];
-					currentType = move.getType();
-					++multiplier;
-				}
-				
-				// We went at least 1 piece away and found an empty piece
-				if (multiplier > 2 && move != null) {
-					 sandwiches.add(move);					
-				}
-			}
-		}
-		return sandwiches;
 	}
 
 	private void dumbPlayersMove() {
@@ -165,19 +99,20 @@ public class Board implements GameObject {
 			randomlyPlacePiece(currentPlayer);
 		}
 		currentPlayer = Piece.SMARTPLAYER;
-		makePotentialMoves();
+		moveManager.makePotentialMoves(potentialMoves, boardPieces, currentPlayer);
 	}
 	
 	private void smartPlayersMove() {
 		if (Globals.SMART_PLAYER_USES_AI) {
-			Action nextMove = artificialIntelligence.getNextMove(getCurrentState());
-			//executeAIMove(nextMove);
+			Point nextMove = (Point) artificialIntelligence.getNextMove(getCurrentState());
+			Piece move = potentialMoves.remove(nextMove);
+			moveManager.playMove(move, boardPieces, currentPlayer);
 		}
 		else {
 			randomlyPlacePiece(currentPlayer);
 		}
 		currentPlayer = Piece.DUMBPLAYER;
-		makePotentialMoves();
+		moveManager.makePotentialMoves(potentialMoves, boardPieces, currentPlayer);
 	}
 	
 	private void randomlyPlacePiece(int currentPlayer) {
@@ -191,43 +126,7 @@ public class Board implements GameObject {
 				break;
 			}
 		}
-		playMove(move);
-	}
-	
-	private void playMove(Piece move) {
-		move.setType(currentPlayer);
-		Point destination = new Point(move.getX(), move.getY());
-		List<Piece> sandwiches = findSandwichPieces(destination.x, destination.y, currentPlayer);
-		for (Piece piece : sandwiches) {
-			if (piece.getType() != currentPlayer) {
-				continue;
-			}
-			// Go to each piece in between move and piece
-			Point current = new Point(piece.getX(), piece.getY());
-			int diffX = destination.x - current.x;
-			int diffY = destination.y - current.y;
-			int offsetX = 0, offsetY = 0;
-			
-			if (diffX > 0) {
-				offsetX = 1;
-			}
-			else if (diffX < 0) {
-				offsetX = -1;
-			}
-			if (diffY > 0) {
-				offsetY = 1;
-			}
-			else if (diffY < 0) {
-				offsetY = -1;
-			}
-			current.x += offsetX;
-			current.y += offsetY;
-			while (current.equals(destination) == false) {
-				boardPieces[current.x][current.y].convertPiece();
-				current.x += offsetX;
-				current.y += offsetY;
-			}
-		}
+		moveManager.playMove(move, boardPieces, currentPlayer);
 	}
 	
 	@Override
@@ -292,9 +191,9 @@ public class Board implements GameObject {
 		Piece move = potentialMoves.remove(point);
 		
 		if (move != null) {
-			playMove(move);
+			moveManager.playMove(move, boardPieces, currentPlayer);
 			currentPlayer = Piece.SMARTPLAYER;
-			makePotentialMoves();
+			moveManager.makePotentialMoves(potentialMoves, boardPieces, currentPlayer);
 		}
 	}
 	

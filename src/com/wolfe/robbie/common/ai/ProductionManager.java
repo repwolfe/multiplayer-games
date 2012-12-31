@@ -1,7 +1,7 @@
 package com.wolfe.robbie.common.ai;
 
-import java.util.LinkedList;
+import java.util.List;
 
 public interface ProductionManager {
-	LinkedList<AINode> createNextMoves(State initialState);
+	List<AINode> createNextMoves(State initialState);
 }
