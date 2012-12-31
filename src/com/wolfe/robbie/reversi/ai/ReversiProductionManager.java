@@ -12,6 +12,12 @@ import com.wolfe.robbie.common.ai.State;
 import com.wolfe.robbie.reversi.Globals;
 import com.wolfe.robbie.reversi.gameobjects.Piece;
 
+/**
+ * Creates and executes moves for the AI algorithm
+ * Also contains all the move execution code used by the human player
+ * @author Robbie
+ *
+ */
 public class ReversiProductionManager implements ProductionManager {
 
 	@Override
@@ -20,7 +26,20 @@ public class ReversiProductionManager implements ProductionManager {
 			return null;
 		}
 		
+		ReversiState initialState = (ReversiState) iState;
 		List<AINode> moves = new LinkedList<AINode>();
+		
+		for (Entry<Point, Piece> pair : initialState.potentialMoves.entrySet()) {
+			// For each potential move, execute it and put the result in a new state
+			ReversiState state = new ReversiState(initialState);
+			playMove(pair.getValue(), state.boardPieces, state.currentPlayer);
+			state.currentPlayer = Piece.getEnemyType(state.currentPlayer);
+			makePotentialMoves(state.potentialMoves, state.boardPieces, state.currentPlayer);
+			state.isDeadState = isGameOver(state.potentialMoves);
+			
+			AINode node = new AINode(state, pair.getKey());
+			moves.add(node);
+		}
 		
 		return moves;
 	}

@@ -6,38 +6,57 @@ import processing.core.PConstants;
 import com.wolfe.robbie.common.GameObject;
 import com.wolfe.robbie.reversi.Globals;
 
+/**
+ * Represents a piece on the gameboard
+ * Has a location and color, and animates when switching to a different color
+ * @author Robbie
+ *
+ */
 public class Piece implements GameObject {
+	// Player Types
 	private static int EMPTY 		= -1;
 	public static int DUMBPLAYER 	= 0;
 	public static int SMARTPLAYER 	= 1;
 	public static int POTENTIAL		= 2;
 	
+	// Graphics stuff
 	private static int PieceLocationSize = 100;
 	private static int PieceSize = (int) (PieceLocationSize * 0.9);
 	private static int[] colors;
+	private static String[] colorNames;
 	
+	// Location, based off of piece sizes and graphics locations
 	private int gridX, gridY, squareX, squareY, locationX, locationY;
+	
 	private int color;
 	private int playerType;
+	
+	// For animating
 	private boolean converting = false;
 	private int offset = 0;
 	
+	// All the Pieces share the same size and potential colors
 	public static void init(int pieceLocationSize) {
 		PieceLocationSize = pieceLocationSize;
 		PieceSize = (int) (PieceLocationSize * 0.7);
 		colors = new int[3];
+		colorNames = new String[2];
 		if (Globals.random.nextBoolean()) {
-			colors[DUMBPLAYER] = 255;
-			colors[SMARTPLAYER] = 0;
+			colors[DUMBPLAYER] 	= 255; 	colorNames[DUMBPLAYER] 	= "White";
+			colors[SMARTPLAYER] = 0; 	colorNames[SMARTPLAYER] = "Black";
 		}
 		else {
-			colors[DUMBPLAYER] = 0;
-			colors[SMARTPLAYER] = 255;
+			colors[DUMBPLAYER] 	= 0;	colorNames[DUMBPLAYER] 	= "Black";
+			colors[SMARTPLAYER] = 255;	colorNames[SMARTPLAYER]	= "White";
 		}
 	}
 	
 	public static int getEnemyType(int type) {
 		return (type == Piece.DUMBPLAYER ? Piece.SMARTPLAYER : Piece.DUMBPLAYER);
+	}
+	
+	public static String getPlayerColor(int type) {
+		return colorNames[type];
 	}
 	
 	public Piece(int x, int y) {
@@ -50,6 +69,11 @@ public class Piece implements GameObject {
 		setType(type);
 	}
 	
+	public Piece(Piece other) {
+		init(other.gridX, other.gridY);
+		setType(other.playerType);
+	}
+
 	private void init(int x, int y) {
 		gridX 		= x;
 		gridY 		= y;
@@ -57,6 +81,18 @@ public class Piece implements GameObject {
 		squareY 	= gridY * PieceLocationSize;
 		locationX 	= squareX + (PieceLocationSize / 2);
 		locationY 	= squareY + (PieceLocationSize / 2);
+	}
+	
+	/**
+	 * Two pieces are equal if they have the same location and type
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || obj instanceof Piece == false) {
+			return false;
+		}
+		Piece other = (Piece) obj;
+		return other.gridX == gridX && other.gridY == gridY && other.playerType == playerType;
 	}
 	
 	public final int getX() {

@@ -8,6 +8,11 @@ import com.wolfe.robbie.reversi.gameobjects.Board;
 
 import processing.core.PApplet;
 
+/**
+ * The applet, doesn't do much except tell the board to draw and handle keypresses/mouseclicks
+ * @author Robbie
+ *
+ */
 @SuppressWarnings("serial")
 public class Drawer extends PApplet {
 	private ArrayList<GameObject> gameObjects;

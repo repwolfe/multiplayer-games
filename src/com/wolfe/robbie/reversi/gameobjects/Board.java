@@ -9,13 +9,17 @@ import processing.core.PApplet;
 
 import com.wolfe.robbie.common.GameObject;
 import com.wolfe.robbie.common.Point;
-import com.wolfe.robbie.common.ai.Action;
 import com.wolfe.robbie.common.ai.MiniMax;
 import com.wolfe.robbie.reversi.Globals;
 import com.wolfe.robbie.reversi.ai.ReversiHeuristic;
 import com.wolfe.robbie.reversi.ai.ReversiProductionManager;
 import com.wolfe.robbie.reversi.ai.ReversiState;
 
+/**
+ * Contains all the information for the game board
+ * @author Robbie
+ *
+ */
 public class Board implements GameObject {
 	private Piece[][] boardPieces;
 	
@@ -78,7 +82,7 @@ public class Board implements GameObject {
 	}
 	
 	/**
-	 * Checks if no legal moves left for a player or if a player runs out of pieces
+	 * Checks if no legal moves left for a player
 	 * @return
 	 */
 	private boolean checkIsGameOver() {
@@ -90,10 +94,12 @@ public class Board implements GameObject {
 		return gameOver;
 	}
 
+	/**
+	 * The "dumb" player (ie: You), or another computer with potentially worse heuristics
+	 */
 	private void dumbPlayersMove() {
 		if (Globals.DUMB_PLAYER_USES_AI) {
-			//MillMove nextMove = (MillMove) dumbAI.getNextMove(getCurrentState());
-			//executeAIMove(nextMove);
+			aiMove();
 		}
 		else {
 			randomlyPlacePiece(currentPlayer);
@@ -102,11 +108,12 @@ public class Board implements GameObject {
 		moveManager.makePotentialMoves(potentialMoves, boardPieces, currentPlayer);
 	}
 	
+	/**
+	 * The computer player, who usually uses AI
+	 */
 	private void smartPlayersMove() {
 		if (Globals.SMART_PLAYER_USES_AI) {
-			Point nextMove = (Point) artificialIntelligence.getNextMove(getCurrentState());
-			Piece move = potentialMoves.remove(nextMove);
-			moveManager.playMove(move, boardPieces, currentPlayer);
+			aiMove();
 		}
 		else {
 			randomlyPlacePiece(currentPlayer);
@@ -115,6 +122,19 @@ public class Board implements GameObject {
 		moveManager.makePotentialMoves(potentialMoves, boardPieces, currentPlayer);
 	}
 	
+	/**
+	 * Generate an AI Move and execute it
+	 */
+	private void aiMove() {
+		Point nextMove = (Point) artificialIntelligence.getNextMove(getCurrentState());
+		Piece move = potentialMoves.remove(nextMove);
+		moveManager.playMove(move, boardPieces, currentPlayer);
+	}
+	
+	/**
+	 * Pick a random potential move and execute it
+	 * @param currentPlayer
+	 */
 	private void randomlyPlacePiece(int currentPlayer) {
 		Set<Entry<Point, Piece>> moves = potentialMoves.entrySet();
 		int i = 0;
@@ -144,10 +164,10 @@ public class Board implements GameObject {
 			
 			g.fill(255);
 			g.text("Game Over", g.width/2-35, g.height/2);
-			g.text("Winner is: " + getWinner(), g.width/2 - 35, g.height/2 + 50);
+			g.text("Winner is: " + getWinner(), g.width/2 - 95, g.height/2 + 50);
 		}
 		
-		// Update
+		// Animate any pieces converting
 		for (int i = 0; i < Globals.BOARD_DIMENSIONS; ++i) {
 			for (int j = 0; j < Globals.BOARD_DIMENSIONS; ++j) {
 				boardPieces[i][j].update();
@@ -155,6 +175,10 @@ public class Board implements GameObject {
 		}
 	}
 	
+	/**
+	 * Prints the winner based off of who has more pieces
+	 * @return
+	 */
 	private String getWinner() {
 		int numDumb = 0, numSmart = 0;
 		for (int i = 0; i < Globals.BOARD_DIMENSIONS; ++i) {
@@ -169,14 +193,19 @@ public class Board implements GameObject {
 			}
 		}
 		if (numDumb > numSmart) {
-			return "Dumb Player";
+			return Piece.getPlayerColor(Piece.DUMBPLAYER) + " with " + numDumb + " pieces";
 		}
 		else if (numSmart > numDumb) {
-			return "Smart Player";
+			return Piece.getPlayerColor(Piece.SMARTPLAYER) + " with " + numSmart + " pieces";
 		}
 		return "Tie";
 	}
 
+	/**
+	 * Handle mouseclicks, if clicked on a potential move then execute it
+	 * @param mouseX
+	 * @param mouseY
+	 */
 	public void clickedMove(int mouseX, int mouseY) {
 		if (currentPlayer != Piece.DUMBPLAYER) {
 			return;
@@ -197,11 +226,12 @@ public class Board implements GameObject {
 		}
 	}
 	
+	/**
+	 * A snapshot of the game
+	 * @return
+	 */
 	private ReversiState getCurrentState() {
-		return new ReversiState(/*currentPlayer,
-							 currentPieces, otherPieces, 
-							 currentFirstLast, otherFirstLast, 
-							 currentStage, gameOver*/);
+		return new ReversiState(currentPlayer, boardPieces, potentialMoves, gameOver);
 	}
 
 }
