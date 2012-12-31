@@ -2,6 +2,8 @@ package com.wolfe.robbie.reversi;
 
 import java.util.ArrayList;
 
+import com.smenu.SMenu;
+import com.smenu.actn;
 import com.wolfe.robbie.common.GameObject;
 import com.wolfe.robbie.reversi.gameobjects.Board;
 
@@ -22,6 +24,34 @@ public class Drawer extends PApplet {
 	public void setup() {
 		size(Globals.BOARD_SIZE, Globals.BOARD_SIZE);
 
+		SMenu m = new SMenu(this);
+		m.SMSubM("Difficulty");
+			m.SMItem("Easy (Fast)", new actn() {			
+				@Override
+				public void a() {
+					Globals.PLY_AMOUNT = 4;
+					startGame();
+				}
+			});
+			
+			m.SMItem("Medium", new actn() {			
+				@Override
+				public void a() {
+					Globals.PLY_AMOUNT = 6;
+					startGame();
+				}
+			});
+			
+			m.SMItem("Hard (Slow)", new actn() {			
+				@Override
+				public void a() {
+					Globals.PLY_AMOUNT = 8;
+					startGame();
+				}
+			});
+			m.SMEnd();
+		m.SMEnd();
+		
 		startGame();
 	}
 	
