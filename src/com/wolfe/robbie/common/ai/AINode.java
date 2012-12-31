@@ -1,11 +1,15 @@
 package com.wolfe.robbie.common.ai;
 
-public class AINode {
-	public enum Type { MAX, MIN };
-	
+/**
+ * Represents a Node in the AI Algorithm tree
+ * Contains a State and the move used to get to this State
+ * Also contains the heuristic value for this State
+ * @author Robbie
+ *
+ */
+public class AINode {	
 	public State state;
 	public Action action;
-	public Type type;
 	public int value = 0;
 	
 	public AINode(State state, Action action) {

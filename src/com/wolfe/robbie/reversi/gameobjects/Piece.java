@@ -41,14 +41,8 @@ public class Piece implements GameObject {
 		PieceSize = (int) (PieceLocationSize * 0.7);
 		colors = new int[3];
 		colorNames = new String[2];
-		if (Globals.random.nextBoolean()) {
-			colors[DUMBPLAYER] 	= 255; 	colorNames[DUMBPLAYER] 	= "White";
-			colors[SMARTPLAYER] = 0; 	colorNames[SMARTPLAYER] = "Black";
-		}
-		else {
-			colors[DUMBPLAYER] 	= 0;	colorNames[DUMBPLAYER] 	= "Black";
-			colors[SMARTPLAYER] = 255;	colorNames[SMARTPLAYER]	= "White";
-		}
+		colors[DUMBPLAYER] 	= 255; 	colorNames[DUMBPLAYER] 	= "White";
+		colors[SMARTPLAYER] = 0; 	colorNames[SMARTPLAYER] = "Black";
 	}
 	
 	public static int getEnemyType(int type) {
@@ -61,7 +55,7 @@ public class Piece implements GameObject {
 	
 	public Piece(int x, int y) {
 		init(x, y);
-		playerType = EMPTY;
+		setType(EMPTY);
 	}
 	
 	public Piece(int x, int y, int type) {
@@ -114,7 +108,9 @@ public class Piece implements GameObject {
 	
 	public void setType(int type) {
 		playerType = type;
-		color = colors[type];
+		if (type != EMPTY) {
+			color = colors[type];
+		}
 	}
 	
 	public void makeEmpty() {

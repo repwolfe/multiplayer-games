@@ -5,6 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.PriorityQueue;
 
+/**
+ * The AI Algorithm for Multiplayer games
+ * Looks a certain number of moves ahead and picks the best move for the current player, which
+ * is the worst move for the opponent
+ * @author Robbie
+ *
+ */
 public class MiniMax {
 	private ProductionManager pm;
 	private Heuristic heuristic;
@@ -23,7 +30,7 @@ public class MiniMax {
 	 * Tool to create moves using minimax algorithm
 	 * @param pm the object responsible for creating the moves
 	 * @param hs the heuristic which returns the payoff for the current state
-	 * @param usePruning if should use alpha beta pruning
+	 * @param usePruning if should use alpha beta pruning, which decreases the number of nodes generated
 	 * @param plyAmount the amount of moves to look ahead
 	 */
 	public MiniMax(ProductionManager pm, Heuristic hs, boolean usePruning, int plyAmount) {
@@ -94,6 +101,17 @@ public class MiniMax {
 		}
 	}
 	
+	/**
+	 * Alpha-Beta pruning method of getting the max (best) move from a given state
+	 * Perspective of the player, return the best move
+	 * 
+	 * From the given state, gets all the next moves the other
+	 * player could make, and return the value of the maximum move
+	 * @param state
+	 * @param depth
+	 * @param alphaBeta best score for MAX so far / best score for MIN so far
+	 * @return
+	 */
 	private int maxValue(AINode node, int depth, int[] alphaBeta) {
 		if (depth <= 0 || node.state.isDeadState) {
 			// Stop going deeper in tree
@@ -120,6 +138,17 @@ public class MiniMax {
 		return value;
 	}
 	
+	/**
+	 * Alpha-Beta pruning method of getting the min (worst) move from a given state 
+	 * Perspective of opponent, return the worst move for the player
+	 * 
+	 * From the given state, gets all the next moves I could make
+	 * and have the other player return the value of the minimum move
+	 * @param state
+	 * @param depth
+	 * @param alphaBeta best score for MAX so far / best score for MIN so far
+	 * @return
+	 */
 	private int minValue(AINode node, int depth, int[] alphaBeta) {
 		if (depth <= 0 || node.state.isDeadState) {
 			// Stop going deeper in tree
@@ -145,77 +174,7 @@ public class MiniMax {
 		
 		return value;
 	}
-	/**
-	 * Alpha-Beta pruning method of getting the max (best) move from a given state
-	 * Perspective of the player, return the best move
-	 * 
-	 * From the given state, gets all the next moves the other
-	 * player could make, and return the value of the maximum move
-	 * @param state
-	 * @param depth
-	 * @param alpha best score for MAX so far
-	 * @param beta best score for MIN so far
-	 * @return
-	 */
-	/*
-	private int maxValue(AINode node, int depth, int[] alphaBeta) {
-		if (depth <= 0 || node.state.isDeadState) {
-			// Stop going deeper in tree
-			return heuristic.getCurrentHeuristic(node.state);
-		}
-		
-		List<AINode> nextMoves = getSuccessors(node.state);
-		numNodesExpanded += nextMoves.size();
-		
-		for (AINode move : nextMoves) {
-			alphaBeta[ALPHA] = Math.max(alphaBeta[ALPHA], minValue(move, depth - 1, alphaBeta));
-			
-			// If at any point ___________, no need to continue expanding
-			if (alphaBeta[ALPHA] >= alphaBeta[BETA]) {
-				node.value = alphaBeta[BETA];
-				return alphaBeta[ALPHA];
-			}
-		}
-		
-		node.value = alphaBeta[BETA];
-		return alphaBeta[ALPHA];
-	}
-	*/
-	/**
-	 * Alpha-Beta pruning method of getting the min (worst) move from a given state	 * 
-	 * Perspective of opponent, return the worst move for the player
-	 * 
-	 * From the given state, gets all the next moves I could make
-	 * and have the other player return the value of the minimum move
-	 * @param state
-	 * @param depth
-	 * @param alpha best score for MAX so far
-	 * @param beta best score for MIN so far
-	 * @return
-	 */
-	/*
-	private int minValue(AINode node, int depth, int[] alphaBeta) {
-		if (depth <= 0 || node.state.isDeadState) {
-			// Stop going deeper in tree
-			return heuristic.getOpponentHeuristic(node.state);
-		}
-		
-		List<AINode> nextMoves = getSuccessors(node.state);
-		numNodesExpanded += nextMoves.size();
-		
-		for (AINode move : nextMoves) {
-			alphaBeta[BETA] = Math.min(alphaBeta[BETA], maxValue(move, depth - 1, alphaBeta));
-			
-			// If at any point ___________, no need to continue expanding
-			if (alphaBeta[BETA] <= alphaBeta[ALPHA]) {
-				node.value = alphaBeta[BETA];
-				return alphaBeta[BETA];
-			}
-		}
-		node.value = alphaBeta[BETA];
-		return alphaBeta[BETA];
-	}
-	*/
+
 	/*************************************
 	 * Non Alpha - Beta Pruning Methods  *
 	 *************************************/

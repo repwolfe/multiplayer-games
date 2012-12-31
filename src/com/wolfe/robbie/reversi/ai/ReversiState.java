@@ -27,7 +27,7 @@ public class ReversiState extends State {
 
 	public ReversiState(ReversiState other) {
 		this.currentPlayer = other.currentPlayer;
-		copyData(boardPieces, other.potentialMoves);
+		copyData(other.boardPieces, other.potentialMoves);
 		this.isDeadState = other.isDeadState;
 	}
 	

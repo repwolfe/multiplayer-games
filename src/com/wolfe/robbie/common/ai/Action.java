@@ -1,5 +1,9 @@
 package com.wolfe.robbie.common.ai;
 
-public abstract class Action {
-
-}
+/**
+ * Represents a move for the AI algorithm, it is what is returned when a move is chosen
+ * Obivously should be subclassed
+ * @author Robbie
+ *
+ */
+public abstract class Action {}
