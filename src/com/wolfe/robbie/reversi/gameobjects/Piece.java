@@ -4,7 +4,6 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 
 import com.wolfe.robbie.common.GameObject;
-import com.wolfe.robbie.reversi.Globals;
 
 /**
  * Represents a piece on the gameboard
